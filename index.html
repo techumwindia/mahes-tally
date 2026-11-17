@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GM Garments Invoice</title>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: plain, formal business form
+   IDEA: the printed GST tax invoice sheet itself
+   PICTURE: the invoice is the page; only yellow cells are typed
+   COLOUR and TYPE: white paper, black rules, navy title bar, pale yellow input cells
+   LAYOUT: one A4-width sheet, toolbar above, prints clean */
+:root{color-scheme:light dark;--bg:light-dark(#e7e4df,#171513);--paper:#fff;--ink:#111;--line:#555;--head:#1f3b63;--in:#fff8d6;--sub:#dbe2f2;--acc:#c8371e}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);font:14px/1.4 "Schibsted Grotesk",Arial,sans-serif;overflow-x:clip}
+.bar{max-width:900px;margin:0 auto;padding:14px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bar h1{font-size:18px;margin:0 auto 0 0;color:light-dark(#111,#eee)}
+button{font:600 14px "Schibsted Grotesk",sans-serif;min-height:40px;padding:0 14px;border:1px solid #333;border-radius:6px;background:#fff;color:#111;cursor:pointer}
+button.p{background:var(--head);color:#fff;border-color:var(--head)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.note{max-width:900px;margin:0 auto;padding:0 12px 10px;font-size:13px;color:light-dark(#444,#bbb)}
+.note b{background:var(--in);color:#111;padding:0 4px;border:1px solid #c9b968}
+.wrap{overflow-x:auto;padding:0 12px 40px}
+.sheet{width:820px;margin:0 auto;background:var(--paper);color:var(--ink);border:1px solid var(--line);box-shadow:0 4px 18px #0003}
+table{width:100%;border-collapse:collapse}
+td,th{border:1px solid var(--line);padding:3px 6px;vertical-align:top}
+.title{background:var(--head);color:#fff;text-align:center;font-size:20px;font-weight:700;letter-spacing:.05em;padding:4px}
+input,textarea{font:inherit;color:inherit;width:100%;border:0;background:transparent;padding:1px 2px}
+textarea{resize:vertical;min-height:0;display:block}
+.e{background:var(--in)}
+.e input,.e textarea,input.e{background:var(--in)}
+.fx input,.fx textarea{background:transparent}
+.edit .fx input,.edit .fx textarea{background:#eef4ff;outline:1px dashed #89a}
+.r{text-align:right}.c{text-align:center}.b{font-weight:700}
+.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.items th{background:#fde9d9;font-weight:700}
+.items td{height:30px}
+.items input{text-align:inherit}
+.del{border:0;background:none;color:var(--acc);font-size:16px;min-height:0;padding:0 4px}
+.tax th{background:var(--sub)}
+.words{font-style:italic}
+.add{margin:4px;min-height:32px}
+@media print{
+ body{background:#fff}.bar,.note,.add,.del,.noprint{display:none!important}
+ .wrap{padding:0;overflow:visible}.sheet{box-shadow:none;width:100%}
+ .e,.e input,.e textarea,input.e{background:transparent!important}
+ textarea{resize:none;overflow:hidden}
+ @page{size:A4;margin:10mm}
+}
+</style>
+</head>
+<body>
+<div class="bar">
+ <h1>Tax invoice</h1>
+ <button id="edit">Edit fixed details</button>
+ <button id="neu">New invoice</button>
+ <button class="p" id="prn">Print / Save PDF</button>
+</div>
+<p class="note">Type only in the <b>yellow</b> cells. Amount, discount, GST, round off, totals and the amounts in words calculate automatically. Your entries stay saved in this browser.</p>
+<div class="wrap"><div class="sheet" id="sheet">
+<table>
+ <tr><td colspan="4" class="title">TAX INVOICE</td></tr>
+ <tr>
+  <td rowspan="7" colspan="2" class="fx" style="width:62%">
+   <input class="b" data-k="sName" value="GM GARMENTS">
+   <textarea data-k="sAddr" rows="3">4/22, GM Buildings, Puliangudi Main Road,
+Chinthamani Rajagopalaswamy Temple,
+Chinthamani, Tenkasi, Tamil Nadu</textarea>
+   <input data-k="sGst" value="GSTIN/UIN : 33BQUPG1398G1ZJ">
+   <input data-k="sState" value="State Name : Tamil Nadu, Code : 33">
+  </td>
+  <td class="b c" style="width:19%">Invoice No.</td><td class="e"><input data-k="invNo" value="289"></td>
+ </tr>
+ <tr><td class="b c">Dated</td><td class="e"><input type="date" data-k="invDate" value="2026-11-12"></td></tr>
+ <tr><td class="c">Delivery Note</td><td class="e"><input data-k="dNote"></td></tr>
+ <tr><td class="c">Mode of Payment</td><td class="e"><input data-k="pay"></td></tr>
+ <tr><td class="c">Buyer's Order No.</td><td class="e"><input data-k="ordNo"></td></tr>
+ <tr><td class="c">Dispatched through</td><td class="e"><input data-k="disp"></td></tr>
+ <tr><td class="c">Destination</td><td class="e"><input data-k="dest"></td></tr>
+ <tr>
+  <td colspan="2" class="fx">
+   <div class="b">Consignee (Ship to) / Buyer (Bill to)</div>
+   <input class="b" data-k="bName" value="MUMBAI PRINT">
+   <textarea data-k="bAddr" rows="2">Door No:67/8416, Near Convent Junction, Market Road, Ernakulam
+MSME : UDYAM-KL-02-0036283 (Small)</textarea>
+   <input data-k="bGst" value="GSTIN/UIN: 32BBAPR7365H1ZK">
+   <div style="display:flex;gap:4px;align-items:center">State Name :<input data-k="bState" value="Kerala" style="width:40%">Code :<input data-k="bCode" value="32" style="width:15%" inputmode="numeric"></div>
+   <input data-k="bCont" value="Contact : 8893173438, 7012219234, 0484-4853395">
+   <input data-k="bMail" value="E-Mail : mumbaiprint17@gmail.com">
+  </td>
+  <td colspan="2" class="c" style="vertical-align:bottom">TERMS OF DELIVERY<br><textarea class="e" data-k="terms" rows="2" style="text-align:center;margin-top:4px"></textarea></td>
+ </tr>
+</table>
+
+<table class="items">
+ <thead><tr>
+  <th style="width:5%">NO</th><th style="width:30%">Description of Goods</th><th style="width:11%">HSN/SAC</th>
+  <th style="width:14%">Quantity</th><th style="width:11%">Rate</th><th style="width:8%">per</th><th style="width:17%">Amount</th><th class="noprint" style="width:4%"></th>
+ </tr></thead>
+ <tbody id="rows"></tbody>
+ <tbody>
+  <tr class="noprint"><td colspan="8"><button class="add" id="addRow">+ Add item</button></td></tr>
+  <tr><td></td><td></td><td></td><td></td><td></td><td></td><td class="n b" id="sub"></td><td class="noprint"></td></tr>
+  <tr><td></td><td>Less : DISCOUNT ALLOWED</td><td></td><td></td><td class="e"><input id="discPct" class="r" placeholder="%" inputmode="decimal" title="Discount %"></td><td class="c" style="font-size:12px">% or ₹ →</td><td class="e"><input id="disc" class="r" inputmode="decimal" placeholder="0.00"></td><td class="noprint"></td></tr>
+  <tr><td></td><td class="b">Taxable Value</td><td></td><td></td><td></td><td></td><td class="n b" id="taxable"></td><td class="noprint"></td></tr>
+  <tbody id="taxRows"></tbody>
+ <tbody>
+  <tr><td></td><td>ROUND OFF</td><td></td><td></td><td></td><td></td><td class="n" id="ro"></td><td class="noprint"></td></tr>
+  <tr><td></td><td class="b">Total</td><td></td><td class="n b" id="tq"></td><td></td><td class="b" id="tu"></td><td class="n b" id="grand" style="font-size:15px"></td><td class="noprint"></td></tr>
+  <tr><td colspan="8" class="words">Amount Chargeable (in words): <b id="w1"></b></td></tr>
+ </tbody>
+</table>
+
+<table class="tax">
+ <thead id="tHead"></thead>
+ <tbody id="tBody"></tbody>
+ <tr><td colspan="9" class="words">Tax Amount (in words): <b id="w2"></b></td></tr>
+</table>
+
+<table>
+ <tr>
+  <td class="fx" style="width:60%">
+   <div class="b">Company's Bank Details</div>
+   <input data-k="bk1" value="A/c Holder's Name : MUMBAI PRINT">
+   <input data-k="bk2" value="Bank Name : City Union Bank">
+   <input data-k="bk3" value="A/c No. : 510909010063335">
+   <input data-k="bk4" value="Branch &amp; IFS Code : Pallimukku &amp; CIUB0000086">
+  </td>
+  <td rowspan="2" class="c" style="vertical-align:bottom">for <span id="forName" class="b"></span><br><br><br><br>Authorised signatory</td>
+ </tr>
+ <tr><td style="font-size:12px">Declaration: We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</td></tr>
+</table>
+<p class="c" style="font-size:12px;margin:4px">This is a Computer Generated Invoice</p>
+</div></div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const KEY='gmInvoiceV1';
+const sampleItems=[
+ {d:'MTP COTTON CUTS',h:'520851',q:'450',r:'173',u:'MTRS'},
+ {d:'EKTA MUMBAI GOLD',h:'520851',q:'2430',r:'176',u:'MTRS'}];
+let items=sampleItems.map(o=>({...o}));
+let st={gst:'5',disc:'18720',discPct:''};
+
+const num=v=>{const x=parseFloat(String(v).replace(/,/g,''));return isFinite(x)?x:0};
+const r2=x=>Math.round((x+Number.EPSILON)*100)/100;
+const f=x=>x.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fq=x=>x.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:3});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const ones=['','ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE','TEN','ELEVEN','TWELVE','THIRTEEN','FOURTEEN','FIFTEEN','SIXTEEN','SEVENTEEN','EIGHTEEN','NINETEEN'];
+const tens=['','','TWENTY','THIRTY','FORTY','FIFTY','SIXTY','SEVENTY','EIGHTY','NINETY'];
+const two=n=>n<20?ones[n]:tens[Math.floor(n/10)]+(n%10?' '+ones[n%10]:'');
+const three=n=>(n>=100?ones[Math.floor(n/100)]+' HUNDRED'+(n%100?' ':''):'')+(n%100?two(n%100):'');
+function words(n){
+ if(n===0)return 'ZERO';
+ const p=[];const cr=Math.floor(n/1e7);n%=1e7;const l=Math.floor(n/1e5);n%=1e5;const t=Math.floor(n/1000);n%=1000;
+ if(cr)p.push(words(cr)+' CRORE');if(l)p.push(two(l)+' LAKH');if(t)p.push(two(t)+' THOUSAND');if(n)p.push(three(n));
+ return p.join(' ');
+}
+const inr=x=>{const rs=Math.floor(x+1e-9),ps=Math.round((x-rs)*100);return 'INR '+words(rs)+(ps?' AND '+two(ps)+' PAISE':'')+' ONLY'};
+
+function drawRows(){
+ $('rows').innerHTML=items.map((it,i)=>`<tr>
+  <td class="c">${i+1}</td>
+  <td class="e"><input data-i="${i}" data-f="d" value="${esc(it.d)}"></td>
+  <td class="e"><input data-i="${i}" data-f="h" value="${esc(it.h)}" class="c"></td>
+  <td class="e"><input data-i="${i}" data-f="q" value="${esc(it.q)}" class="r" inputmode="decimal"></td>
+  <td class="e"><input data-i="${i}" data-f="r" value="${esc(it.r)}" class="r" inputmode="decimal"></td>
+  <td class="e"><input data-i="${i}" data-f="u" value="${esc(it.u)}"></td>
+  <td class="n" id="a${i}"></td>
+  <td class="noprint c"><button class="del" data-del="${i}" title="Remove item" aria-label="Remove item ${i+1}">✕</button></td></tr>`).join('');
+}
+
+function calc(){
+ let sub=0,tq=0;const units=new Set();
+ items.forEach((it,i)=>{const a=r2(num(it.q)*num(it.r));sub+=a;tq+=num(it.q);if(it.u.trim())units.add(it.u.trim());
+  const c=$('a'+i);if(c)c.textContent=a?f(a):''});
+ sub=r2(sub);
+ let disc=num(st.disc);
+ if(st.discPct!==''){disc=r2(sub*num(st.discPct)/100);$('disc').value=disc?disc.toFixed(2):''}
+ const taxable=r2(sub-disc);
+ const rate=num(st.gst);
+ const intra=document.querySelector('[data-k=bCode]').value.trim()==='33';
+ let lines,tax;
+ if(intra){const h=r2(taxable*rate/200);lines=[['CGST',rate/2,h],['SGST',rate/2,h]];tax=r2(h*2)}
+ else{tax=r2(taxable*rate/100);lines=[['IGST',rate,tax]]}
+ const exact=r2(taxable+tax),grand=Math.round(exact),ro=r2(grand-exact);
+
+ $('sub').textContent=f(sub);
+ $('taxable').textContent=f(taxable);
+ $('taxRows').innerHTML=lines.map((l,j)=>`<tr><td></td><td>${l[0]}</td><td></td><td></td>
+  <td class="${j?'n':'e'}">${j?l[1]+'%':`<input id="gst" class="r" value="${esc(st.gst)}" inputmode="decimal" title="GST %">`}</td>
+  <td>${j?'':'%'}</td><td class="n">${f(l[2])}</td><td class="noprint"></td></tr>`).join('');
+ $('ro').textContent=ro===0?'0.00':(ro<0?'(-)'+f(-ro):'(+)'+f(ro));
+ $('tq').textContent=fq(tq);
+ $('tu').textContent=units.size===1?[...units][0]:'';
+ $('grand').textContent='₹ '+f(grand);
+ $('w1').textContent=inr(grand);
+ $('w2').textContent=inr(tax);
+
+ if(intra){
+  $('tHead').innerHTML=`<tr><th rowspan="2" style="width:34%">Taxable Value</th><th colspan="2">CGST</th><th colspan="2">SGST</th><th rowspan="2">Total Tax Amount</th></tr><tr><th>Rate</th><th>Amount</th><th>Rate</th><th>Amount</th></tr>`;
+  $('tBody').innerHTML=`<tr><td class="n">${f(taxable)}</td><td class="c">${rate/2}%</td><td class="n">${f(lines[0][2])}</td><td class="c">${rate/2}%</td><td class="n">${f(lines[1][2])}</td><td class="n">${f(tax)}</td></tr>
+   <tr class="b"><td class="n">Total ${f(taxable)}</td><td></td><td class="n">${f(lines[0][2])}</td><td></td><td class="n">${f(lines[1][2])}</td><td class="n">${f(tax)}</td></tr>`;
+ }else{
+  $('tHead').innerHTML=`<tr><th style="width:50%">Taxable Value</th><th>IGST Rate</th><th>IGST Amount</th><th>Total Tax Amount</th></tr>`;
+  $('tBody').innerHTML=`<tr><td class="n">${f(taxable)}</td><td class="c">${rate}%</td><td class="n">${f(tax)}</td><td class="n">${f(tax)}</td></tr>
+   <tr class="b"><td class="n">Total ${f(taxable)}</td><td></td><td class="n">${f(tax)}</td><td class="n">${f(tax)}</td></tr>`;
+ }
+ $('forName').textContent=document.querySelector('[data-k=sName]').value;
+ save();
+}
+
+function fixedVals(){const o={};document.querySelectorAll('[data-k]').forEach(e=>o[e.dataset.k]=e.value);return o}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({items,st,fx:fixedVals()}))}catch(e){}}
+function load(){
+ try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d)return;
+  items=d.items||items;st=Object.assign(st,d.st||{});
+  document.querySelectorAll('[data-k]').forEach(e=>{if(d.fx&&d.fx[e.dataset.k]!=null)e.value=d.fx[e.dataset.k]});
+ }catch(e){}
+}
+function lockFixed(on){document.querySelectorAll('.fx input,.fx textarea').forEach(e=>e.readOnly=on)}
+
+document.addEventListener('input',e=>{
+ const t=e.target;
+ if(t.dataset.f){items[+t.dataset.i][t.dataset.f]=t.value;calc();return}
+ if(t.id==='gst'){st.gst=t.value;const p=t.selectionStart;calc();const g=$('gst');g.focus();try{g.setSelectionRange(p,p)}catch(_){}return}
+ if(t.id==='disc'){st.disc=t.value;st.discPct='';$('discPct').value='';calc();return}
+ if(t.id==='discPct'){st.discPct=t.value;if(t.value==='')st.disc=$('disc').value;calc();return}
+ if(t.dataset.k){calc()}
+});
+document.addEventListener('click',e=>{
+ const d=e.target.dataset.del;
+ if(d!=null){items.splice(+d,1);if(!items.length)items.push({d:'',h:'',q:'',r:'',u:'MTRS'});drawRows();calc()}
+});
+$('addRow').onclick=()=>{const last=items[items.length-1]||{};items.push({d:'',h:last.h||'',q:'',r:'',u:last.u||'MTRS'});drawRows();calc();
+ const ins=$('rows').querySelectorAll('input[data-f=d]');ins[ins.length-1].focus()};
+$('edit').onclick=()=>{const on=$('sheet').classList.toggle('edit');lockFixed(!on);$('edit').textContent=on?'Done editing':'Edit fixed details'};
+$('neu').onclick=()=>{
+ const n=$('neu');
+ if(n.dataset.c!=='1'){n.dataset.c='1';n.textContent='Click again to clear items';setTimeout(()=>{n.dataset.c='';n.textContent='New invoice'},3000);return}
+ n.dataset.c='';n.textContent='New invoice';
+ items=[{d:'',h:'520851',q:'',r:'',u:'MTRS'}];st.disc='';st.discPct='';
+ const no=document.querySelector('[data-k=invNo]');const v=parseInt(no.value,10);if(isFinite(v))no.value=v+1;
+ document.querySelector('[data-k=invDate]').value=new Date().toISOString().slice(0,10);
+ ['dNote','pay','ordNo','disp','dest','terms'].forEach(k=>document.querySelector(`[data-k=${k}]`).value='');
+ $('disc').value='';$('discPct').value='';drawRows();calc();
+};
+$('prn').onclick=()=>{try{window.print()}catch(e){}};
+
+load();
+$('disc').value=st.disc;$('discPct').value=st.discPct;
+lockFixed(true);drawRows();calc();
+}
+</script>
+</body>
+</html>
