@@ -235,7 +235,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('click',e=>{
  const d=e.target.dataset.del;
- if(d!=null){items.splice(+d,1);if(!items.length)items.push({d:'',h:'',q:'',r:'',u:'MTRS'});drawRows();calc()}
+ if(d!=null){items.splice(+d,1);if(!items.length)items.push({d:'',h:'',q:'',r:'',u:''});drawRows();calc()}
 });
 $('addRow').onclick=()=>{const last=items[items.length-1]||{};items.push({d:'',h:last.h||'',q:'',r:'',u:last.u||'MTRS'});drawRows();calc();
  const ins=$('rows').querySelectorAll('input[data-f=d]');ins[ins.length-1].focus()};
@@ -244,7 +244,7 @@ $('neu').onclick=()=>{
  const n=$('neu');
  if(n.dataset.c!=='1'){n.dataset.c='1';n.textContent='Click again to clear items';setTimeout(()=>{n.dataset.c='';n.textContent='New invoice'},3000);return}
  n.dataset.c='';n.textContent='New invoice';
- items=[{d:'',h:'520851',q:'',r:'',u:'MTRS'}];st.disc='';st.discPct='';
+ items=[{d:'',h:'',q:'',r:'',u:''}];st.disc='';st.discPct='';
  const no=document.querySelector('[data-k=invNo]');const v=parseInt(no.value,10);if(isFinite(v))no.value=v+1;
  document.querySelector('[data-k=invDate]').value=new Date().toISOString().slice(0,10);
  ['dNote','pay','ordNo','disp','dest','terms'].forEach(k=>document.querySelector(`[data-k=${k}]`).value='');
